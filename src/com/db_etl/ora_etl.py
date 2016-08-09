@@ -13,7 +13,7 @@ def init_logger():
     try:
         #获取时间，用于构建日志文件名称
         curDate = datetime.date.today()
-        LogName =  r'G:\log\log_%s.log' %curDate
+        LogName =  r'F:\log\log_%s.log' %curDate
         format_str='[%(asctime)s] %(filename)s - %(name)s [line:%(lineno)-4d] %(levelname)-8s: %(message)s'
         datefmt_str = '%Y-%m-%d %H:%M:%S'
         
