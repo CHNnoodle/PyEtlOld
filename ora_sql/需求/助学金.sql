@@ -1,18 +1,22 @@
-select * from STAGE.T_BZKS_QGZXBCFF;
-
-insert into xijiaweb.student_subsidy
+--stage.t_bzks_zxj
+truncate table xijiaweb.student_grants;
+insert into xijiaweb.student_grants
   (sno,
    school_year,
-   term_dm,
-   supporting_sponsor,
-   subsidy_reason,
-   subsidy_sum)
-  select t1.xh   sno,
-         t1.xn   school_year,
-         t1.xq   term_dm,
-         t1.dwdm supporting_sponsor,
-         sqly    subsidy_reason,
-         t2.sfje subsidy_sum
-    from stage.t_bzks_qgzx t1, stage.t_bzks_qgzxbcff t2
-   where t1.xh = t2.xh
-     and t1.qggwid = t2.qggwid
+   school_term,
+   grant_name,
+   grant_lvl,
+   grant_type,
+   grant_je,
+   subsidize_time,
+   subsidize_dw)
+  select xh    sno,
+         xn    school_year,
+         xqdm  school_term,
+         zxjmc grant_name,
+         zxjdj grant_lvl,
+         zxjlx grant_type,
+         zxje  grant_je,
+         sfrq  subsidize_time,
+         dwdm  subsidize_dw
+    from stage.t_bzks_zxj

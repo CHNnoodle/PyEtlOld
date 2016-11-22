@@ -1,0 +1,10 @@
+insert into xijiaweb.student_work_for_study
+  (sno, grant_date, department, station, pay)
+  select t1.xh     sno,
+         t2.ffrq   grant_date,
+         t1.dwdm   department,
+         t1.qggwid station,
+         t2.sfje   pay
+    from stage.t_bzks_qgzx t1, stage.t_bzks_qgzxbcff t2
+   where t1.xh = t2.xh
+     and t1.qggwid = t2.qggwid

@@ -1,10 +1,10 @@
 select * from xijia.njust_book t;
 
 select * from xijia.njust_book t
-where dxzwm like '%é€‰è¯¾%';
+where dxzwm like '%½ð%';
 
 select * from xijia.njust_book t
-where ywxl='ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
+where ywxl='×ÊÖú¹ÜÀí';
 
 select * from stage.t_bzks_jxj;
 
