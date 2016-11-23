@@ -1,4 +1,4 @@
-﻿truncate table xijiaweb.student_work_for_study;
+truncate table xijiaweb.student_work_for_study;
 insert into xijiaweb.student_work_for_study
   (sno,
    grant_date,
@@ -7,7 +7,7 @@ insert into xijiaweb.student_work_for_study
    pay,
    school_date,
    term,
-   work_address)ß
+   work_address)
   select t1.xh     sno,
          t2.ffrq   grant_date,
          t1.dwdm   department,
