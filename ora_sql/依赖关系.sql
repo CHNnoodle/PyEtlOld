@@ -3,7 +3,7 @@ declare
   v_b varchar2(200);
 
 begin
-  pkg_etl_model.p_insert_proc_relation('xj_gl.p_t_d_ky_zz',
+  pkg_etl_model.p_insert_proc_relation('xj_gl.p_t_d_ky_xmjf_dz',
                                        '',
                                        '4:00',
                                        'Íõ¸Õ',

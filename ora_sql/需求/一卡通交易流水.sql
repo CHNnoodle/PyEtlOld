@@ -1,3 +1,4 @@
+truncate table xijiaweb.card_transactions;
 insert into xijiaweb.card_transactions
   (card_account,
    card_account_num,

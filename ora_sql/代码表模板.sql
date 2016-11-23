@@ -1,4 +1,4 @@
-create table xj_code.code_demo
+create table xj_code.code_qggwlx
 (
   dm   varchar2(20) primary key,
   mc   varchar2(500),
