@@ -1,4 +1,4 @@
-create sequence xijiaweb.seq_undergraduate_courses 
+create sequence xijiaweb.seq_card_transactions
 start with 1 
 increment by 1 
 minvalue 1 
@@ -7,9 +7,9 @@ nocycle
 nocache; 
 
 
-create  trigger xijiaweb.tgr_undergraduate_courses 
-before insert on xijiaweb.undergraduate_courses 
+create or replace trigger xijiaweb.tgr_card_transactions 
+before insert on xijiaweb.card_transactions
 for each row
 begin
-    select seq_undergraduate_courses .nextval into:new.id from sys.dual;
+    select seq_card_transactions.nextval into:new.id from sys.dual;
 end;

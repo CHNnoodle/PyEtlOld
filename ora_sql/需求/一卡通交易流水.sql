@@ -1,4 +1,5 @@
 truncate table xijiaweb.card_transactions;
+truncate table xijiaweb.card_transactions;
 insert into xijiaweb.card_transactions
   (card_account,
    card_account_num,
@@ -11,9 +12,10 @@ insert into xijiaweb.card_transactions
    sub_merchant_code,
    transaction_amount,
    transaction_balance,
-   total_transaction_number)
-  select kh card_account,
-         kh card_account_num,
+   total_transaction_number,
+   sno)
+  select t1.kh card_account,
+         t1.kh card_account_num,
          jyrq record_date,
          jyrq transaction_date,
          to_date(jyrq || ' ' || jysj, 'yyyy-mm-dd hh24:mi:ss') transaction_time,
@@ -23,8 +25,10 @@ insert into xijiaweb.card_transactions
          shdm sub_merchant_code,
          jyje transaction_amount,
          jyye transaction_balance,
-         kjs total_transaction_number
-    from cwgl.t_d_ykt_grjy t1, xj_code.code_ykt_jylx t2
+         kjs total_transaction_number,
+         t3.sfrzh sno
+    from cwgl.t_d_ykt_grjy t1, xj_code.code_ykt_jylx t2,t_temp_1 t3
    where jyyf in ('201610', '201611')
-     and t1.jylx = t2.mc;
+     and t1.jylx = t2.mc
+     and t1.kh=t3.kh;
 select * from xijiaweb.card_transactions

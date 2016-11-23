@@ -1,21 +1,30 @@
-select * from stage.t_bzks_kc;
+--truncate table xijiaweb.undergraduate_courses;
 insert into xijiaweb.undergraduate_courses
-  (COURSE_CODE,
-   COURSE_TYPE,
-   COURSE_NAME,
-   COURSE_DESCRIPTION,
-   CREDIT_POINTS,
-   CREDIT_HOURS,
-   THEORY_CLASS_HOUR,
-   EXPERIMENT_CLASS_HOUR)
-  select kcdm   COURSE_CODE,
-         kclbdm COURSE_TYPE,
-         kcmc   COURSE_NAME,
-         KCJJ   COURSE_DESCRIPTION,
-         xf     CREDIT_POINTS,
-         xs     CREDIT_HOURS,
-         llxs   THEORY_CLASS_HOUR,
-         syxs   EXPERIMENT_CLASS_HOUR
-    from xj_jwgl.t_d_bzks_kc;
-
-select * from xijiaweb.undergraduate_courses
+  (course_code,
+   course_type,
+   course_name,
+   course_description,
+   credit_points,
+   credit_hours,
+   theory_class_hour,
+   experiment_class_hour,
+   class_no,
+   school_year,
+   school_term,
+   select_number)
+  select t1.kcdm   course_code,
+         kclbdm    course_type,
+         kcmc      course_name,
+         kcjj      course_description,
+         t1.xf     credit_points,
+         t1.xs     credit_hours,
+         llxs      theory_class_hour,
+         syxs      experiment_class_hour,
+         t2.jxbh   class_no,
+         t2.kkxn   school_year,
+         t2.kkxqdm school_term,
+         t2.kxh    select_number
+    from xj_jwgl.t_d_bzks_kc t1, xj_jwgl.t_d_bzks_kk t2
+   where t1.kcdm = t2.kcdm
+     and t1.partid = '22'
+     and t2.partid = '22';
