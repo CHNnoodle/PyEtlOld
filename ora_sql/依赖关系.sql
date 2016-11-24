@@ -3,8 +3,8 @@ declare
   v_b varchar2(200);
 
 begin
-  pkg_etl_model.p_insert_proc_relation('xj_gl.p_t_d_bzks_qgzxbcff', --目标过程
-                                       '', --依赖过程
+  pkg_etl_model.p_insert_proc_relation('xijia.p_aam_ky_zz', --目标过程
+                                       'xj_gl.p_t_d_ky_zz', --依赖过程
                                        '',
                                        '王刚',
                                        v_a,
