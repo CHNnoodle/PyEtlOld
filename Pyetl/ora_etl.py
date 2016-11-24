@@ -60,11 +60,11 @@ def callproc(procname):
         db_conn = get_conn()
         cursor = db_conn.cursor ()  
         
-        yesterday = datetime.datetime.today()-datetime.timedelta(days=1)
-        str1 = yesterday.strftime("%Y%m%d")
+        #yesterday = datetime.datetime.today()-datetime.timedelta(days=5)
+        #str1 = yesterday.strftime("%Y%m%d")
         str2 = cursor.var(cx_Oracle.STRING)
         str3 = cursor.var(cx_Oracle.STRING)
-        cursor.callproc(procname,[str1,str2,str3])
+        cursor.callproc(procname,[inacctday,str2,str3])
         logger.info('%s 执行情况 %s' %(procname,str2.getvalue())) 
         cursor.close ()  
         db_conn.close () 
@@ -84,7 +84,7 @@ def p_judge_run(inc = 30):
         str5 = cursor.var(cx_Oracle.STRING)   
         logger.info('调用p_judge_run开始') 
         logger.info('判断符合执行条件存储过程') 
-        cursor.callproc('xijia.pkg_etl_model.p_judge_run',[str_out,str2,str3,str4,str5])
+        cursor.callproc('xijia.pkg_etl_model.p_judge_run',[inacctday,str_out,str2,str3,str4,str5])
         logger.info('调用p_judge_run完成') 
         cursor.close ()  
         db_conn.close ()  
@@ -119,6 +119,9 @@ def timing_exe(time_inc=5):
 if __name__=='__main__':
     logger = init_logger()   
     logger.info('初始化调度任务')
+    inacctdaytime = datetime.datetime.today()-datetime.timedelta(days=5) #默认昨天
+    inacctday=inacctdaytime.strftime("%Y%m%d")
+    logger.info('调度日期-- %s'%inacctday) 
     schedule = sched.scheduler(time.time, time.sleep)  
     timing_exe()
     
