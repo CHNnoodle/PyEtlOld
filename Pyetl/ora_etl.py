@@ -65,7 +65,7 @@ def callproc(procname):
         str2 = cursor.var(cx_Oracle.STRING)
         str3 = cursor.var(cx_Oracle.STRING)
         cursor.callproc(procname,[inacctday,str2,str3])
-        logger.info('%s 执行情况 %s' %(procname,str2.getvalue())) 
+        logger.info('%s(%s): %s' %(procname,inacctday,str2.getvalue())) 
         cursor.close ()  
         db_conn.close () 
         
@@ -119,7 +119,7 @@ def timing_exe(time_inc=5):
 if __name__=='__main__':
     logger = init_logger()   
     logger.info('初始化调度任务')
-    inacctdaytime = datetime.datetime.today()-datetime.timedelta(days=5) #默认昨天
+    inacctdaytime = datetime.datetime.today()-datetime.timedelta(days=1) #默认昨天
     inacctday=inacctdaytime.strftime("%Y%m%d")
     logger.info('调度日期-- %s'%inacctday) 
     schedule = sched.scheduler(time.time, time.sleep)  
