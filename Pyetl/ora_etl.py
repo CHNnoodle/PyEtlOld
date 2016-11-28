@@ -55,7 +55,7 @@ def get_conn(ora_info='xijia/xijia123@ORCLRAC'):
         
 
 #调用oracle数据库存储过程     
-def callproc(procname):
+def callproc(procname,inacctday):
     try:
         db_conn = get_conn()
         cursor = db_conn.cursor ()  
@@ -74,6 +74,9 @@ def callproc(procname):
     
 def p_judge_run(inc = 30): 
     try:
+        inacctdaytime = datetime.datetime.today()-datetime.timedelta(days=1) #默认昨天
+        inacctday=inacctdaytime.strftime("%Y%m%d")
+        logger.info('调度日期-- %s'%inacctday) 
         db_conn = get_conn()
         logger.info('主进程获得数据库连接')
         cursor = db_conn.cursor () 
@@ -95,7 +98,7 @@ def p_judge_run(inc = 30):
         if str_out.getvalue() :
             logger.info('发现待执行存储过程,循环并发调用存储过程') 
             for now_thread in str_out.getvalue():
-                t = threading.Thread(target=callproc,args=(now_thread,))
+                t = threading.Thread(target=callproc,args=(now_thread,inacctday,))
                 logger.info('执行存储过程 %s'%now_thread)  
                 t.start()
                 thread_cnt+=1
@@ -119,9 +122,6 @@ def timing_exe(time_inc=5):
 if __name__=='__main__':
     logger = init_logger()   
     logger.info('初始化调度任务')
-    inacctdaytime = datetime.datetime.today()-datetime.timedelta(days=1) #默认昨天
-    inacctday=inacctdaytime.strftime("%Y%m%d")
-    logger.info('调度日期-- %s'%inacctday) 
     schedule = sched.scheduler(time.time, time.sleep)  
     timing_exe()
     
