@@ -11,4 +11,4 @@ insert into xijiaweb.book_library_infos
          jsrq borrowed_time,
          yhrq returned_time,
          xjbs is_refill
-    from stage.t_ts_jy
+    from xj_gl.t_d_ts_jy
