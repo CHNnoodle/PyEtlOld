@@ -36,10 +36,10 @@ insert into xijiaweb.student_work_for_study
          xj_gl.t_d_bzks_qgzxbcff t2,
          (select *
             from xj_gl.t_d_bzks_qgzxgw
-           where partid = '23'
+           where partid = '10'
              and rw = 1) t3
    where t1.wid = t2.wid
-     and t1.partid = '23'
-     and t2.partid = '23'
+     and t1.partid = '10'
+     and t2.partid = '10'
      and t1.wwid = t3.wid(+);
  commit;

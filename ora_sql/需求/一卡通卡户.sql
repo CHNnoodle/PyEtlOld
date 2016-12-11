@@ -12,4 +12,6 @@ insert into xijiaweb.card_accounts
          kpztdm identity_category,
          zcrq   regist_date,
          kyxq   validity_date
-    from stage.t_ykt_kh
+    from xj_gl.t_d_ykt_kh
+    where partid='10';
+    commit;

@@ -24,7 +24,8 @@ insert into xijiaweb.undergraduate_courses
          t2.kkxn   school_year,
          t2.kkxqdm school_term,
          t2.kxh    select_number
-    from xj_jwgl.t_d_bzks_kc t1, xj_jwgl.t_d_bzks_kk t2
+    from xj_gl.t_d_bzks_kc t1, xj_gl.t_d_bzks_kk t2
    where t1.kcdm = t2.kcdm
-     and t1.partid = '22'
-     and t2.partid = '22';
+     and t1.partid = '10'
+     and t2.partid = '10';
+commit;

@@ -1,4 +1,4 @@
-insert into xijiaweb.student_grants
+/*insert into xijiaweb.student_grants
   (sno,
    school_year,
    school_term,
@@ -20,7 +20,7 @@ insert into xijiaweb.student_grants
          ffrq    subsidize_time
   
     from stage.t_bzks_jxj;
-
+*/
 insert into xijiaweb.student_scholarship
   (sno,
    school_year,

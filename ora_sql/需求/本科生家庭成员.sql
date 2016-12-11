@@ -18,4 +18,5 @@ insert into xijiaweb.home_members
          dwmc   UNIT_NAME,
          dwyb   POSTCODE,
          zw     JOB_OCCUPATION
-    from stage.t_bzks_jtcy
+    from stage.t_bzks_jtcy;
+    COMMIT;
