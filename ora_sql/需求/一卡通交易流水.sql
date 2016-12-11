@@ -1,4 +1,4 @@
-truncate table xijiaweb.card_transactions;
+
 truncate table xijiaweb.card_transactions;
 insert into xijiaweb.card_transactions
   (card_account,
@@ -27,8 +27,7 @@ insert into xijiaweb.card_transactions
          jyye transaction_balance,
          kjs total_transaction_number,
          t3.sfrzh sno
-    from cwgl.t_d_ykt_grjy t1, xj_code.code_ykt_jylx t2,t_temp_1 t3
-   where jyyf in ('201610', '201611')
-     and t1.jylx = t2.mc
-     and t1.kh=t3.kh;
-select * from xijiaweb.card_transactions
+    from xj_gl.t_d_ykt_grjy t1, xj_code.code_ykt_jylx t2,xj_gl.t_d_ykt_kh t3
+   where t1.jylx = t2.mc
+     and t1.kh=t3.kh
+     and t3.partid='04';
