@@ -19,4 +19,5 @@ insert into xijiaweb.student_grants
          zxje  grant_je,
          sfrq  subsidize_time,
          dwdm  subsidize_dw
-    from stage.t_bzks_zxj
+    from stage.t_bzks_zxj;
+    commit;

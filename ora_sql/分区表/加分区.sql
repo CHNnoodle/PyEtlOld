@@ -1,9 +1,9 @@
 declare
-  v_partid varchar2(20) := '20160429';
+  v_partid varchar2(20) := '20160302';
   v_sql    long;
 begin
   for i in 1 .. 360 loop
-    v_sql := 'alter table xj_gl.t_d_ykt_grjy add partition part' ||
+    v_sql := 'alter table xijiaweb.card_transactions2 add partition part' ||
              v_partid || ' values less than (''' ||
              to_char(to_date(v_partid, 'yyyymmdd') + 1, 'yyyymmdd') || ''')';
     --dbms_output.put_line(v_sql);
@@ -12,7 +12,7 @@ begin
   end loop;
 end;
 
-
+/*
 declare
   v_partid varchar2(20) := '201603';
   v_sql    long;
@@ -25,4 +25,4 @@ begin
     execute immediate v_sql;
     v_partid := to_char(add_months(to_date(v_partid, 'yyyymm') ,1), 'yyyymm');
   end loop;
-end;
+end;*/

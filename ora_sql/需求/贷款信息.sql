@@ -12,5 +12,5 @@ insert into xijiaweb.student_loans
          jkjsrq  loan_endtime,
          sqly    loan_reason
     from stage.t_bzks_dk;
-
+commit;
 stage.t_bzks_dk stage.t_bzks_dkff

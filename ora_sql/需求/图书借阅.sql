@@ -12,3 +12,5 @@ insert into xijiaweb.book_library_infos
          yhrq returned_time,
          xjbs is_refill
     from xj_gl.t_d_ts_jy
+   where partid='10';
+   commit;

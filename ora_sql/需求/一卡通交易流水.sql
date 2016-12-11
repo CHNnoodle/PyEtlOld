@@ -1,7 +1,8 @@
 
 truncate table xijiaweb.card_transactions;
 insert into xijiaweb.card_transactions
-  (card_account,
+  (ID,
+  card_account,
    card_account_num,
    record_date,
    transaction_date,
@@ -14,7 +15,8 @@ insert into xijiaweb.card_transactions
    transaction_balance,
    total_transaction_number,
    sno)
-  select t1.kh card_account,
+  select T1.JYLSH ID,
+  t1.kh card_account,
          t1.kh card_account_num,
          jyrq record_date,
          jyrq transaction_date,
@@ -30,4 +32,6 @@ insert into xijiaweb.card_transactions
     from xj_gl.t_d_ykt_grjy t1, xj_code.code_ykt_jylx t2,xj_gl.t_d_ykt_kh t3
    where t1.jylx = t2.mc
      and t1.kh=t3.kh
-     and t3.partid='04';
+     and t1.jlrq='20161210'
+     and t3.partid='10';
+commit;

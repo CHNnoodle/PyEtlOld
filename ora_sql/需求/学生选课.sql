@@ -18,7 +18,7 @@ insert into xijiaweb.student_courses
          t2.kkxqdm course_semester
     from xj_gl.t_d_bzks_xk t1, xj_gl.t_d_bzks_kk t2
    where t1.jxbh = t2.jxbh
-   and t1.partid='04'
-   and t2.partid='04'
+   and t1.partid='10'
+   and t2.partid='10'
    and t2.kkxn='2016-2017';
     commit;

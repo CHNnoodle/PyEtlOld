@@ -6,3 +6,4 @@ insert into xijiaweb.library_books
          cbrq  year,
          dyzz  author
     from stage.t_ts;
+    commit;

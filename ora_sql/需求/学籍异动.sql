@@ -29,4 +29,5 @@ insert into xijiaweb.school_roll_changes
          xbh    now_class,
          xxz    now_system
     from xj_gl.t_d_bzks_xjyd
-   where partid = '01'
+   where partid = '10';
+commit;
