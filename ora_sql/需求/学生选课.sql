@@ -20,5 +20,5 @@ insert into xijiaweb.student_courses
    where t1.jxbh = t2.jxbh
    and t1.partid='10'
    and t2.partid='10'
-   and t2.kkxn='2016-2017';
+   and t2.kkxn='2015-2016';
     commit;
