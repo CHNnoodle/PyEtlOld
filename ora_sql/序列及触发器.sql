@@ -1,5 +1,5 @@
 declare
-v_name varchar2(200):='undergraduate_courses';
+v_name varchar2(200):='card_merchant_shops';
 begin
 dbms_output.put_line(v_name);
 execute immediate 'create sequence xijiaweb.seq_'||v_name||'

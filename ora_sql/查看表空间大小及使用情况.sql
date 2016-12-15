@@ -4,10 +4,10 @@ select tablespace_name 表空间, sum(blocks * 8192 / 1000000) 剩余空间M
  group by tablespace_name;
 
 --表空间总体情况
-select b.name, sum(a.bytes / 1000000) 总空间M
+select b.name,a.name filename,sum(a.bytes / 1000000) 总空间M
   from v$datafile a, v$tablespace b
  where a.ts# = b.ts#
- group by b.name;
+ group by b.name,a.name;
 
 
 --表空间分析情况
@@ -25,7 +25,9 @@ select 　　a.a1 表空间名称,
             group by tablespace_name) b,
        　　 (select tablespace_name c1, contents c2, extent_management c3
              from dba_tablespaces) c 　　where a.a1 = b.b1 and c.c1 = b.b1;
-             
+            
+alter tablespace users add datafile '+DATA/orclrac/datafile/users5.dbf'size 100m 
+autoextend on next 100m maxsize 32000m         
 
 select *
   from (select owner, segment_name, sum(bytes/1024/1024) "bytes(M)"

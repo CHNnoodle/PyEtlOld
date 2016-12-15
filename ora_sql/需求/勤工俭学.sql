@@ -10,7 +10,8 @@ insert into xijiaweb.student_work_for_study
    work_dates,
    work_type,
    work_aim,
-   work_address)
+   work_address,
+   work_descrption)
   select t1.xh sno,
          t2.ffrq grant_date,
          t3.ygdw department,
@@ -31,7 +32,8 @@ insert into xijiaweb.student_work_for_study
          end work_dates,
          t3.gwlxdm work_type,
          t3.gwyq work_aim,
-         t3.gzdd work_address
+         t3.gzdd work_address,
+         T3.gwms  work_descrption 
     from xj_gl.t_d_bzks_qgzx t1,
          xj_gl.t_d_bzks_qgzxbcff t2,
          (select *
