@@ -116,7 +116,7 @@ create or replace package body pkg_etl_model is
       values
         (lower(in_target_proc),
          v_source_number,
-         nvl(in_ready_time, '4:00'),
+         nvl(in_ready_time, '6:00'),
          lower(in_optname),
          sysdate,
          1);
@@ -143,7 +143,7 @@ create or replace package body pkg_etl_model is
         select distinct lower(in_target_proc),
                         source_proc,
                         v_source_number,
-                        nvl(in_ready_time, '4:00'),
+                        nvl(in_ready_time, '6:00'),
                         lower(in_optname),
                         sysdate,
                         1 status
@@ -196,7 +196,8 @@ create or replace package body pkg_etl_model is
        and t.log_day = in_acct_day
        and ret_code = 'success';
   
-    select count(distinct target_proc), count(distinct f_object_valid(target_proc))
+    select count(distinct target_proc),
+           count(distinct f_object_valid(target_proc))
       into out_all, out_valid
       from xijia.t_proc_relation t
      where status = 1;
@@ -210,7 +211,8 @@ create or replace package body pkg_etl_model is
              where r.target_proc = t.proc_name(+)
                and r.source_number = 0
                and r.status = 1
-               and to_date(to_char(sysdate, 'yyyymmdd ') || r.ready_time,
+               and to_date(to_char(to_date(in_acct_day, 'yyyymmdd') + 1,
+                                   'yyyymmdd') || ' ' || r.ready_time,
                            'yyyymmdd hh24:mi') <= sysdate
                and t.log_day(+) = in_acct_day
                and (id is null or flag is null)
@@ -227,8 +229,8 @@ create or replace package body pkg_etl_model is
                      where r.target_proc = t1.proc_name(+)
                        and r.source_number > 0
                        and r.status = 1
-                       and to_date(to_char(sysdate, 'yyyymmdd ') ||
-                                   r.ready_time,
+                       and to_date(to_char(to_date(in_acct_day, 'yyyymmdd') + 1,
+                                           'yyyymmdd') || ' ' || r.ready_time,
                                    'yyyymmdd hh24:mi') <= sysdate
                        and r.source_proc = t2.proc_name(+)
                        and t1.log_day(+) = in_acct_day

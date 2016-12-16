@@ -4,7 +4,9 @@ create or replace package pkg_etl_model is
   type number_table is table of number index by binary_integer;
   type varchar2_table is table of varchar2(50) index by binary_integer;
 
-  function f_object_exist(in_object_name varchar2) return number;
+  function f_object_exist(in_object_name    varchar2,
+                          in_partition_name varchar2 default null)
+    return number;
 
   function f_object_valid(in_object_name varchar2) return varchar2;
 
@@ -15,11 +17,13 @@ create or replace package pkg_etl_model is
                                    v_retcode      out varchar2,
                                    v_retinfo      out varchar2);
 
-  procedure p_judge_run(out_procs out varchar2_table,
-                        out_done  out number,
-                        out_all   out number,
-                        v_retcode out varchar2,
-                        v_retinfo out varchar2);
+  procedure p_judge_run(in_acct_day varchar2,
+                        out_procs   out varchar2_table,
+                        out_done    out number,
+                        out_all     out number,
+                        out_valid   out number,
+                        v_retcode   out varchar2,
+                        v_retinfo   out varchar2);
 
   procedure p_create_table(create_table_name varchar2,
                            refer_table_name  varchar2,
@@ -33,13 +37,23 @@ create or replace package body pkg_etl_model is
   /*
     判断 object 是否存在
   */
-  function f_object_exist(in_object_name varchar2) return number as
+  function f_object_exist(in_object_name    varchar2,
+                          in_partition_name varchar2 default null)
+    return number as
     v_num number;
   begin
-    select count(*)
-      into v_num
-      from all_objects
-     where owner || '.' || object_name = upper(in_object_name);
+    if in_partition_name is null then
+      select count(*)
+        into v_num
+        from all_objects
+       where owner || '.' || object_name = upper(in_object_name);
+    else
+      select count(*)
+        into v_num
+        from all_objects
+       where owner || '.' || object_name = upper(in_object_name)
+         and subobject_name = upper(in_partition_name);
+    end if;
     return v_num;
   end f_object_exist;
 
@@ -102,7 +116,7 @@ create or replace package body pkg_etl_model is
       values
         (lower(in_target_proc),
          v_source_number,
-         nvl(in_ready_time, '0:00'),
+         nvl(in_ready_time, '4:00'),
          lower(in_optname),
          sysdate,
          1);
@@ -129,7 +143,7 @@ create or replace package body pkg_etl_model is
         select distinct lower(in_target_proc),
                         source_proc,
                         v_source_number,
-                        nvl(in_ready_time, '0:00'),
+                        nvl(in_ready_time, '4:00'),
                         lower(in_optname),
                         sysdate,
                         1 status
@@ -159,11 +173,13 @@ create or replace package body pkg_etl_model is
       dbms_output.put_line(v_retinfo);
   end p_insert_proc_relation;
 
-  procedure p_judge_run(out_procs out varchar2_table,
-                        out_done  out number,
-                        out_all   out number,
-                        v_retcode out varchar2, --输出变量
-                        v_retinfo out varchar2) is
+  procedure p_judge_run(in_acct_day varchar2,
+                        out_procs   out varchar2_table,
+                        out_done    out number,
+                        out_all     out number,
+                        out_valid   out number,
+                        v_retcode   out varchar2, --输出变量
+                        v_retinfo   out varchar2) is
     ----------------------过程信息----begin-----------------------------------
     --功能描述：判断过程是否可以执行
     --编写人  ：王刚
@@ -177,11 +193,11 @@ create or replace package body pkg_etl_model is
       from xijia.t_proc_relation r, xijia.t_log t
      where r.target_proc = t.proc_name
        and r.status = 1
-       and t.log_day = to_char(sysdate - 1, 'yyyymmdd')
+       and t.log_day = in_acct_day
        and ret_code = 'success';
   
-    select count(distinct target_proc)
-      into out_all
+    select count(distinct target_proc), count(distinct f_object_valid(target_proc))
+      into out_all, out_valid
       from xijia.t_proc_relation t
      where status = 1;
   
@@ -196,8 +212,8 @@ create or replace package body pkg_etl_model is
                and r.status = 1
                and to_date(to_char(sysdate, 'yyyymmdd ') || r.ready_time,
                            'yyyymmdd hh24:mi') <= sysdate
-               and t.log_day(+) = to_char(sysdate - 1, 'yyyymmdd')
-               and id is null
+               and t.log_day(+) = in_acct_day
+               and (id is null or flag is null)
              group by r.target_proc
             union all
             --有数据源依赖的过程
@@ -215,9 +231,9 @@ create or replace package body pkg_etl_model is
                                    r.ready_time,
                                    'yyyymmdd hh24:mi') <= sysdate
                        and r.source_proc = t2.proc_name(+)
-                       and t1.log_day(+) = to_char(sysdate - 1, 'yyyymmdd')
-                       and t1.id is null
-                       and t2.log_day(+) = to_char(sysdate - 1, 'yyyymmdd')
+                       and t1.log_day(+) = in_acct_day
+                       and (t1.id is null or t1.flag is null)
+                       and t2.log_day(+) = in_acct_day
                        and t2.ret_code = 'success'
                      group by r.target_proc)
              where max_number = count_number)
@@ -226,6 +242,12 @@ create or replace package body pkg_etl_model is
   
     for i in 1 .. out_procs.count loop
       dbms_output.put_line(out_procs(i));
+      update xijia.t_log
+         set flag = 'rerun'
+       where log_day = in_acct_day
+         and proc_name = out_procs(i)
+         and flag is null;
+      commit;
     end loop;
     v_retcode := 'success';
     dbms_output.put_line('success');
@@ -249,16 +271,31 @@ create or replace package body pkg_etl_model is
     --执行周期：手动调度
   
     v_sql long;
-    target_exist exception;
+    target_exist    exception;
+    refer_not_exist exception;
   begin
     if f_object_exist(create_table_name) >= 1 then
       raise target_exist;
     end if;
   
+    if f_object_exist(refer_table_name) = 0 then
+      raise refer_not_exist;
+    end if;
+  
     v_sql := 'create table ' || create_table_name ||
              ' (jlrq char(8),partid char(2),wid varchar2(500),';
     for j in (select t1.column_id,
-                     t1.column_name || ' ' || t1.data_type || case
+                     case
+                       when t1.column_name in
+                            ('JLRQ',
+                             'PARTID',
+                             'WID',
+                             'OPT_TIME',
+                             'SOURCE_FLAG') then
+                        t1.column_name || '2'
+                       else
+                        t1.column_name
+                     end || ' ' || t1.data_type || case
                        when t1.data_type = 'DATE' then
                         null
                        when t1.data_type = 'NUMBER' and
@@ -268,14 +305,13 @@ create or replace package body pkg_etl_model is
                        else
                         '(' || t1.data_length || ')'
                      end || ',' create_table_column
-              
                 from all_tab_cols t1, all_tables t2
                where t1.owner = t2.owner
                  and t1.table_name = t2.table_name
                  and t1.owner || '.' || t1.table_name =
                      upper(refer_table_name)
-                 and t1.num_nulls != t2.num_rows
-                 and t1.column_name!='WID'
+                 and (t1.num_nulls != t2.num_rows or t1.num_nulls is null)
+                 and t1.column_name != 'WID'
                order by t1.column_id) loop
       v_sql := v_sql || j.create_table_column;
     end loop;
@@ -319,6 +355,10 @@ partition by list(partid)
     when target_exist then
       v_retcode := 'fail';
       v_retinfo := 'target table is exist';
+      dbms_output.put_line(v_retinfo);
+    when refer_not_exist then
+      v_retcode := 'fail';
+      v_retinfo := 'refer table is not exist';
       dbms_output.put_line(v_retinfo);
     when others then
       v_retcode := 'fail';
