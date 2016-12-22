@@ -42,9 +42,9 @@ def init_logger():
         logger.error(e) 
 
 #获得oracle数据库连接
-def get_conn(ora_info='xijia/xijia123@ORCLRAC'):
+def get_conn():
     try:
-        db_conn = cx_Oracle.connect(ora_info)
+        db_conn = cx_Oracle.connect('xijia','dba!@#','ORCLRAC')
         cursor = db_conn.cursor ()
         cursor.execute ("select 5 from dual")  
         row = cursor.fetchone () 
