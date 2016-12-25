@@ -41,3 +41,25 @@ insert into xijiaweb.student_courses
      and t2.partid='14'
      and t2.sfzx=1;
     commit;
+
+
+ truncate table xijiaweb.student_courses;
+insert into xijiaweb.student_courses
+     (  sno,
+     course_code,
+      course_category,
+      establish_time,
+      course_semester,
+      class_no)
+     select 
+     t1.xh sno,
+     substr(t1.jxbh,1,length(t1.jxbh)-1) course_code,
+     kclbdm course_category,
+     xn establish_time,
+     xqdm course_semester,
+     t1.jxbh class_no 
+      from xj_gl.t_d_bzks_xk t1,xj_gl.t_d_bzks_pk t2
+     where t1.id=t2.id
+     and t1.partid='20'
+     and t2.partid='20';
+     commit;
