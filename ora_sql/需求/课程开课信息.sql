@@ -26,6 +26,45 @@ insert into xijiaweb.undergraduate_courses
          t2.kxh    select_number
     from xj_gl.t_d_bzks_kc t1, xj_gl.t_d_bzks_kk t2
    where t1.kcdm = t2.kcdm
-     and t1.partid = '10'
-     and t2.partid = '10';
+     and t1.partid = '20'
+     and t2.partid = '20';
+commit;
+
+
+--truncate table xijiaweb.undergraduate_courses;
+--insert into xijiaweb.undergraduate_courses
+  select 
+kcdm course_code , 
+kcsxdm course_type, 
+kcmc course_name , 
+kcywmc course_english_name , 
+kcjj course_description , 
+kcksdwdm department_name , 
+xf credit_points , 
+xs credit_hours , 
+llxs theory_class_hour , 
+syxs experiment_class_hour , 
+case when skfsdm='4' then 1 else 0 end online_teaching_status , 
+jxbh class_no , 
+kkxn school_year , 
+kkxqdm school_term , 
+kkyxdm, 
+skzs, 
+kcsxdm, 
+skfsdm, 
+xkxqh, 
+ksfsdm, 
+kslbdm, 
+xf, 
+xs, 
+bz, 
+clrq, 
+czlx, 
+opt_time, 
+source_flag
+
+    from xj_gl.t_d_bzks_kc t1, xj_gl.t_d_bzks_kk t2
+   where t1.kcdm = t2.kcdm
+     and t1.partid = '20'
+     and t2.partid = '20';
 commit;

@@ -1,11 +1,15 @@
+truncate table xijiaweb.undergraduate_course_results;
 insert into xijiaweb.undergraduate_course_results
-  (sno, establish_time, establish_flag, course_code, credit_points, result)
-  select xh   sno,
-         xn   establish_time,
-         xqdm establish_flag,
-         kcdm course_code,
-         xf   credit_points,
-         zpcj result
-    from xj_gl.t_d_bzks_kscj
-   where partid = '14';
+  (sno, establish_time, establish_flag, course_code,course_name, credit_points, result)
+  select t1.xh   sno,
+         t1.xn   establish_time,
+         t1.xqdm establish_flag,
+         t1.kcdm course_code,
+         t2.kcmc course_name,
+         t1.xf   credit_points,
+         t1.zpcj result
+    from xj_gl.t_d_bzks_kscj t1,xj_gl.t_d_bzks_kc t2
+   where t1.kcdm=t2.kcdm(+)
+   and t1.partid = '03'
+   and t2.partid='03';
    commit;
