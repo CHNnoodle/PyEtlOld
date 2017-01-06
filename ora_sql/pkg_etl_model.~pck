@@ -30,6 +30,10 @@ create or replace package pkg_etl_model is
                            v_retcode         out varchar2,
                            v_retinfo         out varchar2);
 
+  procedure p_create_his_table(refer_table_name varchar2,
+                               v_retcode        out varchar2,
+                               v_retinfo        out varchar2);
+
 end pkg_etl_model;
 /
 create or replace package body pkg_etl_model is
@@ -368,6 +372,119 @@ partition by list(partid)
                    dbms_utility.format_error_backtrace;
       dbms_output.put_line(v_retinfo);
   end p_create_table;
+
+  procedure p_create_his_table(refer_table_name varchar2,
+                               v_retcode        out varchar2, --输出变量
+                               v_retinfo        out varchar2) is
+    ----------------------过程信息----begin-----------------------------------
+    --功能描述：根据接口表来历史拍照表
+    --编写人  ：王刚
+    --创建时间：2015 年6 月25 日
+    --目标表  ：
+    --执行周期：手动调度
+  
+    create_table_name varchar2(50);
+    table_name        varchar2(50) := substr(refer_table_name,
+                                             instr(refer_table_name, '.') + 1,
+                                             length(refer_table_name));
+    v_sql             long;
+    target_exist    exception;
+    refer_not_exist exception;
+  begin
+    if f_object_exist(refer_table_name) = 0 then
+      raise refer_not_exist;
+    end if;
+  
+    create_table_name := 'xj_his.' || table_name;
+    if f_object_exist(create_table_name) >= 1 then
+      raise target_exist;
+    end if;
+  
+    v_sql := 'create table ' || create_table_name ||
+             ' as select ''20161231'' jlrq,t.* from ' || refer_table_name || ' t
+             where 1=2';
+    dbms_output.put_line(v_sql);
+    execute immediate v_sql;
+    v_sql := 'create or replace procedure xj_his.p_' || table_name ||
+             '(in_acct_day in varchar2,
+                                                  v_retcode   out varchar2,
+                                                  v_retinfo   out varchar2) is
+  ----------------------过程信息 ----begin-----------------------------------
+  --功能描述：
+  --编写人  ：王刚
+  --创建时间：2017 年1 月1 日
+  --过程名称：
+  --依赖过程：
+  --目标表  ：
+  --数据源表：
+  --执行周期：每日
+  v_proc_num number(32); --执行记录id
+  v_rowcount number(16); --dml 行数
+
+begin
+
+  select xijia.seq_t_log.nextval into v_proc_num from dual;
+  insert into xijia.t_log
+    (id, log_day, proc_name, start_time, flag)
+  values
+    (v_proc_num, in_acct_day, ''xj_his.p_' || table_name ||
+             ''', sysdate, ''running'');
+  commit;
+
+  delete from xj_his.' || table_name || ' where jlrq = in_acct_day;
+  insert into xj_his.' || table_name || '
+    select in_acct_day jlrq, t.* from stage.' || table_name || ' t;
+
+  v_rowcount := sql%rowcount;
+  commit;
+
+  v_retcode := ''success'';
+  update xijia.t_log t
+     set t.end_time  = sysdate,
+         t.flag      = ''finish'',
+         t.row_count = v_rowcount,
+         t.exec_time =
+         (sysdate - t.start_time) * 24 * 60 * 60,
+         t.ret_code  = v_retcode
+   where id = v_proc_num;
+  commit;
+  dbms_output.put_line(v_retcode);
+
+exception
+  when others then
+    v_retcode := ''fail'';
+    v_retinfo := to_char(sqlerrm) || '','' ||
+                 dbms_utility.format_error_backtrace;
+    dbms_output.put_line(v_retinfo);
+  
+    update xijia.t_log t
+       set t.end_time  = sysdate,
+           t.flag      = ''break'',
+           t.exec_time = sysdate - t.start_time,
+           t.ret_code  = v_retcode,
+           t.ret_info  = v_retinfo
+     where id = v_proc_num;
+    commit;
+end;';
+    execute immediate v_sql;
+  
+    v_retcode := 'success';
+    dbms_output.put_line('success');
+  exception
+    when target_exist then
+      v_retcode := 'fail';
+      v_retinfo := 'target table is exist';
+      dbms_output.put_line(v_retinfo);
+    when refer_not_exist then
+      v_retcode := 'fail';
+      v_retinfo := 'refer table is not exist';
+      dbms_output.put_line(v_retinfo);
+    when others then
+      v_retcode := 'fail';
+      v_retinfo := to_char(sqlerrm) || ',' ||
+                   dbms_utility.format_error_backtrace;
+      dbms_output.put_line(v_retinfo);
+  end p_create_his_table;
 
 end pkg_etl_model;
 /
