@@ -1,4 +1,4 @@
-create or replace package pkg_etl_model is
+create or replace package pkg_etl_model authid current_user is
 
   type date_table is table of date index by binary_integer;
   type number_table is table of number index by binary_integer;
@@ -33,6 +33,10 @@ create or replace package pkg_etl_model is
   procedure p_create_his_table(refer_table_name varchar2,
                                v_retcode        out varchar2,
                                v_retinfo        out varchar2);
+
+  procedure p_t_d_procedure(in_acct_day varchar2,
+                            v_retcode   out varchar2,
+                            v_retinfo   out varchar2);
 
 end pkg_etl_model;
 /
@@ -497,6 +501,80 @@ end;';
                    dbms_utility.format_error_backtrace;
       dbms_output.put_line(v_retinfo);
   end p_create_his_table;
+
+  procedure p_t_d_procedure(in_acct_day varchar2,
+                            v_retcode   out varchar2,
+                            v_retinfo   out varchar2) is
+    ----------------------过程信息 ----begin-----------------------------------
+    --功能描述：备份存储过程
+    --编写人  ：王刚
+    --创建时间：2017 年1 月17 日
+    --执行周期：每日
+  
+    v_proc_num number(32); --执行记录id
+    v_rowcount number(16) := 0; --dml 行数
+  
+  begin
+    select xijia.seq_t_log.nextval into v_proc_num from dual;
+    insert into xijia.t_log
+      (id, log_day, proc_name, start_time, flag)
+    values
+      (v_proc_num,
+       in_acct_day,
+       'xijia.p_t_d_procedure',
+       sysdate,
+       'running');
+    commit;
+  
+    delete from xijia.t_d_procedure where bak_day = in_acct_day;
+    commit;
+    for i in (select upper(user_name) user_name from t_user order by xh) loop
+    
+      for j in (select rownum, owner, object_name
+                  from all_objects
+                 where object_type = 'PROCEDURE'
+                   and owner = i.user_name) loop
+        insert into xijia.t_d_procedure
+          select in_acct_day bak_day,
+                 i.user_name,
+                 j.rownum row_num,
+                 j.object_name procedure_name,
+                 dbms_metadata.get_ddl('PROCEDURE',
+                                       j.object_name,
+                                       i.user_name)
+            from dual;
+        v_rowcount := v_rowcount + sql%rowcount;
+        commit;
+      end loop;
+    
+    end loop;
+  
+    v_retcode := 'success';
+  
+    update xijia.t_log t
+       set t.end_time  = sysdate,
+           t.flag      = 'finish',
+           t.row_count = v_rowcount,
+           t.exec_time =
+           (sysdate - t.start_time) * 24 * 60 * 60,
+           t.ret_code  = v_retcode
+     where id = v_proc_num;
+    commit;
+  exception
+    when others then
+      v_retcode := 'fail';
+      v_retinfo := to_char(sqlerrm) || ',' ||
+                   dbms_utility.format_error_backtrace;
+      dbms_output.put_line(v_retinfo);
+      update xijia.t_log t
+         set t.end_time  = sysdate,
+             t.flag      = 'break',
+             t.exec_time = sysdate - t.start_time,
+             t.ret_code  = v_retcode,
+             t.ret_info  = v_retinfo
+       where id = v_proc_num;
+      commit;
+  end;
 
 end pkg_etl_model;
 /

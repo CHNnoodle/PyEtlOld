@@ -191,6 +191,8 @@ create or replace package body pkg_etl_model is
     --目标表  ：
     --执行周期：python 自动调度
   
+    v_odiflag number;
+  
   begin
     select count(distinct r.target_proc)
       into out_done
@@ -206,55 +208,65 @@ create or replace package body pkg_etl_model is
       from xijia.t_proc_relation t
      where status = 1;
   
-    --判断无数据源依赖的过程
-    select distinct target_proc
-      bulk collect
-      into out_procs
-      from (select f_object_valid(r.target_proc) target_proc
-              from xijia.t_proc_relation r, xijia.t_log t
-             where r.target_proc = t.proc_name(+)
-               and r.source_number = 0
-               and r.status = 1
-               and to_date(to_char(to_date(in_acct_day, 'yyyymmdd') + 1,
-                                   'yyyymmdd') || ' ' || r.ready_time,
-                           'yyyymmdd hh24:mi') <= sysdate
-               and t.log_day(+) = in_acct_day
-               and (id is null or flag is null)
-             group by r.target_proc
-            union all
-            --有数据源依赖的过程
-            select f_object_valid(target_proc) target_proc
-              from (select r.target_proc,
-                           max(source_number) max_number,
-                           count(distinct t2.proc_name) count_number
-                      from xijia.t_proc_relation r,
-                           xijia.t_log           t1,
-                           xijia.t_log           t2
-                     where r.target_proc = t1.proc_name(+)
-                       and r.source_number > 0
-                       and r.status = 1
-                       and to_date(to_char(to_date(in_acct_day, 'yyyymmdd') + 1,
-                                           'yyyymmdd') || ' ' || r.ready_time,
-                                   'yyyymmdd hh24:mi') <= sysdate
-                       and r.source_proc = t2.proc_name(+)
-                       and t1.log_day(+) = in_acct_day
-                       and (t1.id is null or t1.flag is null)
-                       and t2.log_day(+) = in_acct_day
-                       and t2.ret_code = 'success'
-                     group by r.target_proc)
-             where max_number = count_number)
-     where target_proc is not null
-       and rownum <= 10; --控制并发数量
+    select count(*)
+      into v_odiflag
+      from t_log t
+     where proc_name = 'stage.odi_njust'
+       and log_day >= in_acct_day;
   
-    for i in 1 .. out_procs.count loop
-      dbms_output.put_line(out_procs(i));
-      update xijia.t_log
-         set flag = 'rerun'
-       where log_day = in_acct_day
-         and proc_name = out_procs(i)
-         and flag is null;
-      commit;
-    end loop;
+    if v_odiflag >= 1 then
+      --判断无数据源依赖的过程
+      select distinct target_proc
+        bulk collect
+        into out_procs
+        from (select f_object_valid(r.target_proc) target_proc
+                from xijia.t_proc_relation r, xijia.t_log t
+               where r.target_proc = t.proc_name(+)
+                 and r.source_number = 0
+                 and r.status = 1
+                 and to_date(to_char(to_date(in_acct_day, 'yyyymmdd') + 1,
+                                     'yyyymmdd') || ' ' || r.ready_time,
+                             'yyyymmdd hh24:mi') <= sysdate
+                 and t.log_day(+) = in_acct_day
+                 and (id is null or flag is null)
+               group by r.target_proc
+              union all
+              --有数据源依赖的过程
+              select f_object_valid(target_proc) target_proc
+                from (select r.target_proc,
+                             max(source_number) max_number,
+                             count(distinct t2.proc_name) count_number
+                        from xijia.t_proc_relation r,
+                             xijia.t_log           t1,
+                             xijia.t_log           t2
+                       where r.target_proc = t1.proc_name(+)
+                         and r.source_number > 0
+                         and r.status = 1
+                         and to_date(to_char(to_date(in_acct_day, 'yyyymmdd') + 1,
+                                             'yyyymmdd') || ' ' ||
+                                     r.ready_time,
+                                     'yyyymmdd hh24:mi') <= sysdate
+                         and r.source_proc = t2.proc_name(+)
+                         and t1.log_day(+) = in_acct_day
+                         and (t1.id is null or t1.flag is null)
+                         and t2.log_day(+) = in_acct_day
+                         and t2.ret_code = 'success'
+                       group by r.target_proc)
+               where max_number = count_number)
+       where target_proc is not null
+         and rownum <= 10; --控制并发数量
+    
+      for i in 1 .. out_procs.count loop
+        dbms_output.put_line(out_procs(i));
+        update xijia.t_log
+           set flag = 'rerun'
+         where log_day = in_acct_day
+           and proc_name = out_procs(i)
+           and flag is null;
+        commit;
+      end loop;
+    
+    end if;
     v_retcode := 'success';
     dbms_output.put_line('success');
   exception

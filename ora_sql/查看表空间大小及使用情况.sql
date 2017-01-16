@@ -25,10 +25,20 @@ select 　　a.a1 表空间名称,
             group by tablespace_name) b,
        　　 (select tablespace_name c1, contents c2, extent_management c3
              from dba_tablespaces) c 　　where a.a1 = b.b1 and c.c1 = b.b1;
-            
+
+--创建表空间
+create temporary tablespace user_temp tempfile '+DATA' size 100m
+autoextend on
+next 100m maxsize 32000m;
+
+create tablespace user_data datafile '+DATA' size 100m
+autoextend on
+next 100m maxsize 32000m;
+--给表空间增加数据文件  -- 一个数据文件最大支持 32G         
 alter tablespace users add datafile '+DATA/orclrac/datafile/users5.dbf'size 100m 
 autoextend on next 100m maxsize 32000m         
 
+--查看最大的表
 select *
   from (select owner, segment_name, sum(bytes/1024/1024) "bytes(M)"
           from dba_segments
